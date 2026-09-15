@@ -21,3 +21,11 @@ rad.json
 *.flf
 #Test results file
 TestResults.xml
+
+### Maven / Java ###
+target/
+
+### IDE ###
+.idea/
+*.iml
+.vscode/
