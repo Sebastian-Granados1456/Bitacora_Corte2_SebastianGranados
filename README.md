@@ -35,91 +35,43 @@ Actualmente el restaurante gestiona las mesas, pedidos y cuentas de forma manual
 
 ## Funcionalidades implementadas
 
-Version inicial de la API en memoria (sin persistencia), con las operaciones esenciales de cada dominio:
+API en memoria (sin persistencia) con arquitectura en capas (Controller -> Service -> Mapper/Validator -> Dominio), version inicial con las operaciones esenciales:
 
 | Dominio | Funcionalidades |
 |---|---|
-| **Mesas** | Crear, listar y buscar mesas. |
-| **Reservas** | Reservar una mesa en una fecha futura (verificando que la mesa exista y que no haya cruce de horario), listar y cancelar. |
-| **Platos** | Crear, listar y buscar platos de la carta (con validacion de nombre unico). |
-| **Pedidos** | Registrar un pedido con sus items (el precio de cada plato se congela al momento del pedido), listar y consultar por mesa. |
-| **Cuentas** | Abrir una cuenta sobre una mesa (una mesa solo puede tener una cuenta abierta a la vez) y ver su total, calculado a partir de los pedidos de esa mesa. |
-| **Parqueadero (Vehiculos)** | Registrar la entrada de un vehiculo (evitando registros duplicados de una misma placa) y consultarlos. |
+| **Mesas** | Crear, listar, buscar (numero unico) |
+| **Reservas** | Crear (mesa existente, sin cruce de horario), listar, cancelar |
+| **Platos** | Crear, listar, buscar (nombre unico) |
+| **Pedidos** | Crear con items (precio congelado), listar, listar por mesa |
+| **Cuentas** | Abrir (1 por mesa) y consultar total calculado |
+| **Vehiculos** | Registrar entrada (sin duplicar placa activa), listar |
 
-### Tabla de endpoints
+Endpoints bajo `/api/v1/{mesas,reservas,platos,pedidos,cuentas,vehiculos}`, documentados en Swagger UI.
 
-| Metodo | Endpoint | Descripcion | Exitos | Errores |
-|---|---|---|---|---|
-| GET | `/api/v1/mesas` | Listar todas las mesas | 200 | - |
-| GET | `/api/v1/mesas/{id}` | Buscar mesa por id | 200 | 404 |
-| POST | `/api/v1/mesas` | Crear una mesa | 201 | 400, 409 |
-| GET | `/api/v1/reservas` | Listar todas las reservas | 200 | - |
-| GET | `/api/v1/reservas/{id}` | Buscar reserva por id | 200 | 404 |
-| POST | `/api/v1/reservas` | Crear una reserva | 201 | 400, 404, 409 |
-| DELETE | `/api/v1/reservas/{id}` | Cancelar una reserva | 204 | 404 |
-| GET | `/api/v1/platos` | Listar toda la carta | 200 | - |
-| GET | `/api/v1/platos/{id}` | Buscar plato por id | 200 | 404 |
-| POST | `/api/v1/platos` | Crear un plato | 201 | 400, 409 |
-| DELETE | `/api/v1/platos/{id}` | Eliminar un plato | 204 | 404 |
-| GET | `/api/v1/pedidos` | Listar todos los pedidos | 200 | - |
-| GET | `/api/v1/pedidos/mesa/{idMesa}` | Listar pedidos de una mesa | 200 | - |
-| GET | `/api/v1/pedidos/{id}` | Buscar pedido por id | 200 | 404 |
-| POST | `/api/v1/pedidos` | Crear un pedido | 201 | 400, 404 |
-| GET | `/api/v1/cuentas` | Listar todas las cuentas | 200 | - |
-| GET | `/api/v1/cuentas/{id}` | Buscar cuenta por id | 200 | 404 |
-| POST | `/api/v1/cuentas` | Abrir una cuenta | 201 | 404, 409 |
-| GET | `/api/v1/vehiculos` | Listar todos los registros | 200 | - |
-| GET | `/api/v1/vehiculos/{id}` | Buscar registro por id | 200 | 404 |
-| POST | `/api/v1/vehiculos` | Registrar entrada de un vehiculo | 201 | 400, 409 |
-
-### Manejo de errores
-
-Todos los errores se responden con el mismo formato JSON (`ErrorResponseDTO`), gestionado centralmente por `GlobalExceptionHandler` (`@RestControllerAdvice`):
-
-```json
-{
-  "timestamp": "2026-09-21T12:00:00",
-  "status": 409,
-  "error": "Conflicto",
-  "message": "Ya existe una mesa con el numero: 5",
-  "path": "/api/v1/mesas"
-}
-```
-
-| Codigo | Situacion |
-|---|---|
-| 400 | Datos de entrada invalidos (Bean Validation en los DTOs) |
-| 404 | El recurso solicitado no existe |
-| 409 | Conflicto de negocio (duplicado) |
-| 500 | Error interno no controlado |
-
----
+Los errores usan un formato uniforme (`ErrorResponseDTO`) via `GlobalExceptionHandler`: **400** datos invalidos, **404** no encontrado, **409** conflicto/duplicado, **500** error interno.
 
 ## Estructura del proyecto
 
 ```
 src/main/java/com/dosw/bluevelvet/
-├── controller/       Controllers REST (uno por dominio)
-├── service/          Interfaces (I*Service) e implementaciones por dominio
-├── dto/               Records de entrada/salida por dominio + ErrorResponseDTO
-├── mapper/            Mappers In/Out por dominio (DTO <-> dominio)
-├── validator/         Regla de negocio de cada dominio
-├── model/domain/      Objetos de dominio (Mesa, Pedido, Cuenta, Reserva, Plato, ItemPedido, RegistroVehiculo)
-├── exception/         Excepciones personalizadas + GlobalExceptionHandler
-├── util/              Utilidades estaticas (generador de ids)
-└── config/            Configuracion de OpenAPI/Swagger
+├── controller/   Controllers REST (uno por dominio)
+├── service/      Interfaces (I*Service) e implementaciones
+├── dto/          Records de entrada/salida + ErrorResponseDTO
+├── mapper/       Mappers In/Out (DTO <-> dominio)
+├── validator/    Regla de negocio de cada dominio
+├── model/domain/ Objetos de dominio
+├── exception/    Excepciones + GlobalExceptionHandler
+├── util/         Utilidades estaticas
+└── config/       Configuracion de Swagger
 ```
 
-## Como ejecutar el proyecto
-
-Requisitos: Java 17+ y Maven.
+## Ejecucion
 
 ```bash
-mvn clean install
 mvn spring-boot:run
 ```
 
-La aplicacion queda disponible en `http://localhost:8080`. Documentacion interactiva en `http://localhost:8080/swagger-ui/index.html`.
+App en `http://localhost:8080`, Swagger en `http://localhost:8080/swagger-ui/index.html`.
 
 ## Pruebas
 
@@ -127,4 +79,4 @@ La aplicacion queda disponible en `http://localhost:8080`. Documentacion interac
 mvn test
 ```
 
-18 pruebas unitarias (JUnit 5 + Mockito), cubriendo para cada dominio: caso exitoso, un caso de conflicto/duplicado y un caso de recurso no encontrado.
+18 pruebas (JUnit 5 + Mockito): por dominio, caso exitoso + conflicto/duplicado + no encontrado.
