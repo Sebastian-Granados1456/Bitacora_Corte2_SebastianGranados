@@ -2,16 +2,15 @@ package com.dosw.bluevelvet.service.reserva;
 
 import java.util.List;
 
-import com.dosw.bluevelvet.dto.reserva.ReservaRequestDTO;
-import com.dosw.bluevelvet.dto.reserva.ReservaResponseDTO;
+import com.dosw.bluevelvet.model.domain.Reserva;
 
 public interface IReservaService {
 
-    List<ReservaResponseDTO> obtenerTodas();
+    List<Reserva> obtenerTodas();
 
-    ReservaResponseDTO buscarPorId(Long id);
+    Reserva obtenerPorId(Long id);
 
-    ReservaResponseDTO crear(ReservaRequestDTO dto);
+    Reserva crear(Reserva reserva);
 
     void cancelar(Long id);
 }

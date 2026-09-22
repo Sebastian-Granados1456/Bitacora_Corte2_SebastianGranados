@@ -2,16 +2,19 @@ package com.dosw.bluevelvet.service.plato;
 
 import java.util.List;
 
-import com.dosw.bluevelvet.dto.plato.PlatoRequestDTO;
-import com.dosw.bluevelvet.dto.plato.PlatoResponseDTO;
+import com.dosw.bluevelvet.model.domain.Plato;
 
+/**
+ * Contrato del servicio de platos. Los metodos reciben y devuelven objetos
+ * de DOMINIO, nunca DTOs — la traduccion la hace el Mapper en el Controller.
+ */
 public interface IPlatoService {
 
-    List<PlatoResponseDTO> obtenerTodos();
+    List<Plato> obtenerTodos();
 
-    PlatoResponseDTO buscarPorId(Long id);
+    Plato obtenerPorId(Long id);
 
-    PlatoResponseDTO crear(PlatoRequestDTO dto);
+    Plato crear(Plato plato);
 
     void eliminar(Long id);
 }

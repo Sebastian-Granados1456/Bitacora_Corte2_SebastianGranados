@@ -3,25 +3,19 @@ package com.dosw.bluevelvet.service.cuenta;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
 
-import com.dosw.bluevelvet.dto.cuenta.CuentaRequestDTO;
-import com.dosw.bluevelvet.dto.cuenta.CuentaResponseDTO;
-import com.dosw.bluevelvet.dto.pedido.PedidoResponseDTO;
 import com.dosw.bluevelvet.exception.RecursoNoEncontradoException;
-import com.dosw.bluevelvet.mapper.cuenta.CuentaMapperOut;
 import com.dosw.bluevelvet.model.domain.Cuenta;
 import com.dosw.bluevelvet.model.domain.EstadoCuenta;
-import com.dosw.bluevelvet.model.domain.ItemPedido;
 import com.dosw.bluevelvet.model.domain.Pedido;
 import com.dosw.bluevelvet.service.mesa.IMesaService;
 import com.dosw.bluevelvet.service.pedido.IPedidoService;
 import com.dosw.bluevelvet.util.IdGenerator;
-import com.dosw.bluevelvet.validator.CuentaValidator;
+import com.dosw.bluevelvet.validator.cuenta.ICuentaValidator;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,72 +28,61 @@ public class CuentaServiceImpl implements ICuentaService {
     private final Map<Long, Cuenta> cuentas = new ConcurrentHashMap<>();
     private final AtomicLong contadorId = new AtomicLong(0);
 
-    private final CuentaMapperOut mapperOut;
-    private final CuentaValidator cuentaValidator;
+    private final ICuentaValidator validator;
     private final IMesaService mesaService;
     private final IPedidoService pedidoService;
 
     @Override
-    public List<CuentaResponseDTO> obtenerTodas() {
+    public List<Cuenta> obtenerTodas() {
         return cuentas.values().stream()
-                .map(this::toDTOConPedidosActualizados)
+                .map(this::conPedidosActualizados)
                 .toList();
     }
 
     @Override
-    public CuentaResponseDTO buscarPorId(Long id) {
-        log.debug("Buscando cuenta con id={}", id);
-        return toDTOConPedidosActualizados(buscarOLanzar(id));
+    public Cuenta obtenerPorId(Long id) {
+        return conPedidosActualizados(buscarOLanzar(id));
     }
 
     @Override
-    public CuentaResponseDTO abrir(CuentaRequestDTO dto) {
-        log.info("Abriendo cuenta para la mesa {}", dto.idMesa());
+    public Cuenta abrir(Long idMesa) {
+        log.info("Abriendo cuenta para la mesa {}", idMesa);
 
-        // Verifica que la mesa exista (delega en IMesaService)
-        mesaService.buscarPorId(dto.idMesa());
-        cuentaValidator.validarSinCuentaAbierta(cuentas, dto.idMesa());
+        // Un Service puede depender de otro Service, siempre via interfaz
+        mesaService.obtenerPorId(idMesa);
+        validator.validarSinCuentaAbierta(idMesa, cuentas.values());
 
-        Cuenta cuenta = new Cuenta();
-        cuenta.setId(IdGenerator.siguiente(contadorId));
-        cuenta.setIdMesa(dto.idMesa());
-        cuenta.setEstado(EstadoCuenta.ABIERTA);
-        cuenta.setFechaApertura(LocalDateTime.now());
+        Cuenta cuenta = Cuenta.builder()
+                .id(IdGenerator.siguiente(contadorId))
+                .idMesa(idMesa)
+                .estado(EstadoCuenta.ABIERTA)
+                .fechaApertura(LocalDateTime.now())
+                .build();
         cuentas.put(cuenta.getId(), cuenta);
 
-        mesaService.marcarCuentaAbierta(dto.idMesa(), true);
+        mesaService.marcarCuentaAbierta(idMesa, true);
 
-        log.info("Cuenta id={} abierta para la mesa {}", cuenta.getId(), dto.idMesa());
-        return toDTOConPedidosActualizados(cuenta);
+        log.info("Cuenta id={} abierta para la mesa {}", cuenta.getId(), idMesa);
+        return conPedidosActualizados(cuenta);
     }
 
     private Cuenta buscarOLanzar(Long id) {
-        return Optional.ofNullable(cuentas.get(id))
-                .orElseThrow(() -> new RecursoNoEncontradoException("Cuenta no encontrada: " + id));
+        Cuenta cuenta = cuentas.get(id);
+        if (cuenta == null) {
+            log.warn("Cuenta no encontrada: id={}", id);
+            throw new RecursoNoEncontradoException("Cuenta no encontrada: " + id);
+        }
+        return cuenta;
     }
 
     /**
-     * Sincroniza los pedidos de la mesa (obtenidos via IPedidoService) con
-     * la cuenta antes de calcular el total, para no duplicar el estado del
-     * pedido dentro de la cuenta.
+     * Sincroniza los pedidos de la mesa (obtenidos via IPedidoService, que
+     * ya devuelve objetos de dominio) con la cuenta antes de calcular el
+     * total.
      */
-    private CuentaResponseDTO toDTOConPedidosActualizados(Cuenta cuenta) {
-        List<Pedido> pedidosDeLaMesa = pedidoService.obtenerPorMesa(cuenta.getIdMesa()).stream()
-                .map(this::toPedidoDomain)
-                .toList();
+    private Cuenta conPedidosActualizados(Cuenta cuenta) {
+        List<Pedido> pedidosDeLaMesa = pedidoService.obtenerPorMesa(cuenta.getIdMesa());
         cuenta.setPedidos(pedidosDeLaMesa);
-        return mapperOut.toDTO(cuenta);
-    }
-
-    // Adaptador minimo para reutilizar Cuenta.calcularTotal() sin duplicar
-    // la logica de sumatoria de items.
-    private Pedido toPedidoDomain(PedidoResponseDTO dto) {
-        Pedido pedido = new Pedido();
-        pedido.setId(dto.id());
-        pedido.setIdMesa(dto.idMesa());
-        pedido.setItems(dto.items().stream()
-                .map(i -> new ItemPedido(i.idPlato(), i.nombrePlato(), i.precioCongelado(), i.cantidad()))
-                .toList());
-        return pedido;
+        return cuenta;
     }
 }

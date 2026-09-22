@@ -2,14 +2,13 @@ package com.dosw.bluevelvet.service.vehiculo;
 
 import java.util.List;
 
-import com.dosw.bluevelvet.dto.vehiculo.RegistroVehiculoRequestDTO;
-import com.dosw.bluevelvet.dto.vehiculo.RegistroVehiculoResponseDTO;
+import com.dosw.bluevelvet.model.domain.RegistroVehiculo;
 
 public interface IRegistroVehiculoService {
 
-    List<RegistroVehiculoResponseDTO> obtenerTodos();
+    List<RegistroVehiculo> obtenerTodos();
 
-    RegistroVehiculoResponseDTO buscarPorId(Long id);
+    RegistroVehiculo obtenerPorId(Long id);
 
-    RegistroVehiculoResponseDTO registrarEntrada(RegistroVehiculoRequestDTO dto);
+    RegistroVehiculo registrarEntrada(RegistroVehiculo registro);
 }

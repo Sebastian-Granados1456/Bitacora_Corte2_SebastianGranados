@@ -2,16 +2,15 @@ package com.dosw.bluevelvet.service.mesa;
 
 import java.util.List;
 
-import com.dosw.bluevelvet.dto.mesa.MesaRequestDTO;
-import com.dosw.bluevelvet.dto.mesa.MesaResponseDTO;
+import com.dosw.bluevelvet.model.domain.Mesa;
 
 public interface IMesaService {
 
-    List<MesaResponseDTO> obtenerTodas();
+    List<Mesa> obtenerTodas();
 
-    MesaResponseDTO buscarPorId(Long id);
+    Mesa obtenerPorId(Long id);
 
-    MesaResponseDTO crear(MesaRequestDTO dto);
+    Mesa crear(Mesa mesa);
 
     void marcarCuentaAbierta(Long id, boolean abierta);
 

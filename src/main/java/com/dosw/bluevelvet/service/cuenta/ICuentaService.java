@@ -2,14 +2,13 @@ package com.dosw.bluevelvet.service.cuenta;
 
 import java.util.List;
 
-import com.dosw.bluevelvet.dto.cuenta.CuentaRequestDTO;
-import com.dosw.bluevelvet.dto.cuenta.CuentaResponseDTO;
+import com.dosw.bluevelvet.model.domain.Cuenta;
 
 public interface ICuentaService {
 
-    List<CuentaResponseDTO> obtenerTodas();
+    List<Cuenta> obtenerTodas();
 
-    CuentaResponseDTO buscarPorId(Long id);
+    Cuenta obtenerPorId(Long id);
 
-    CuentaResponseDTO abrir(CuentaRequestDTO dto);
+    Cuenta abrir(Long idMesa);
 }
