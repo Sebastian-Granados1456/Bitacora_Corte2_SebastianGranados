@@ -11,63 +11,67 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.dosw.bluevelvet.dto.mesa.MesaResponseDTO;
-import com.dosw.bluevelvet.dto.reserva.ReservaRequestDTO;
-import com.dosw.bluevelvet.dto.reserva.ReservaResponseDTO;
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
 import com.dosw.bluevelvet.exception.RecursoNoEncontradoException;
-import com.dosw.bluevelvet.mapper.reserva.ReservaMapperIn;
-import com.dosw.bluevelvet.mapper.reserva.ReservaMapperOut;
+import com.dosw.bluevelvet.model.domain.Mesa;
+import com.dosw.bluevelvet.model.domain.Reserva;
 import com.dosw.bluevelvet.service.mesa.IMesaService;
-import com.dosw.bluevelvet.validator.ReservaValidator;
+import com.dosw.bluevelvet.validator.reserva.ReservaValidator;
 
 @ExtendWith(MockitoExtension.class)
 class ReservaServiceImplTest {
 
-    private final ReservaMapperIn mapperIn = new ReservaMapperIn();
-    private final ReservaMapperOut mapperOut = new ReservaMapperOut();
     private final ReservaValidator validator = new ReservaValidator();
 
     @Mock
     private IMesaService mesaService;
 
+    @InjectMocks
     private ReservaServiceImpl reservaService;
-    private ReservaRequestDTO requestDto;
+
+    private Reserva reserva;
 
     @BeforeEach
     void setUp() {
-        reservaService = new ReservaServiceImpl(mapperIn, mapperOut, validator, mesaService);
-        requestDto = new ReservaRequestDTO(1L, "Andres Cantor", LocalDateTime.now().plusDays(1), 4);
+        reservaService = new ReservaServiceImpl(validator, mesaService);
+        reserva = Reserva.builder()
+                .idMesa(1L).cliente("Andres Cantor")
+                .fechaHora(LocalDateTime.now().plusDays(1)).comensales(4).build();
     }
 
     @Test
-    @DisplayName("Crear reserva sobre mesa existente debe retornar ResponseDTO")
-    void crear_mesaExistente_debeRetornarResponseDTO() {
-        when(mesaService.buscarPorId(1L)).thenReturn(new MesaResponseDTO(1L, 5, 4, "DISPONIBLE", false));
+    @DisplayName("crear - mesa existente guarda la reserva y le asigna un id")
+    void crear_mesaExistente_guardaYRetorna() {
+        when(mesaService.obtenerPorId(1L)).thenReturn(Mesa.builder().id(1L).numero(5).capacidad(4).build());
 
-        ReservaResponseDTO resultado = reservaService.crear(requestDto);
+        Reserva resultado = reservaService.crear(reserva);
 
-        assertNotNull(resultado.id());
-        assertEquals("Andres Cantor", resultado.cliente());
+        assertNotNull(resultado.getId());
+        assertEquals("Andres Cantor", resultado.getCliente());
     }
 
     @Test
-    @DisplayName("Crear reserva sobre mesa inexistente debe propagar RecursoNoEncontradoException")
-    void crear_mesaInexistente_debePropagarExcepcion() {
-        when(mesaService.buscarPorId(1L)).thenThrow(new RecursoNoEncontradoException("Mesa no encontrada: 1"));
+    @DisplayName("crear - mesa inexistente propaga RecursoNoEncontradoException")
+    void crear_mesaInexistente_propagaExcepcion() {
+        when(mesaService.obtenerPorId(1L)).thenThrow(new RecursoNoEncontradoException("Mesa no encontrada: 1"));
 
-        assertThrows(RecursoNoEncontradoException.class, () -> reservaService.crear(requestDto));
+        assertThrows(RecursoNoEncontradoException.class, () -> reservaService.crear(reserva));
     }
 
     @Test
-    @DisplayName("Crear reserva con cruce de horario debe lanzar RecursoDuplicadoException")
-    void crear_cruceDeHorario_debeLanzarExcepcion() {
-        when(mesaService.buscarPorId(1L)).thenReturn(new MesaResponseDTO(1L, 5, 4, "DISPONIBLE", false));
-        reservaService.crear(requestDto);
+    @DisplayName("crear - cruce de horario lanza RecursoDuplicadoException")
+    void crear_cruceDeHorario_lanzaExcepcion() {
+        when(mesaService.obtenerPorId(1L)).thenReturn(Mesa.builder().id(1L).numero(5).capacidad(4).build());
+        reservaService.crear(reserva);
 
-        assertThrows(RecursoDuplicadoException.class, () -> reservaService.crear(requestDto));
+        Reserva otra = Reserva.builder()
+                .idMesa(1L).cliente("Otro Cliente")
+                .fechaHora(reserva.getFechaHora()).comensales(2).build();
+
+        assertThrows(RecursoDuplicadoException.class, () -> reservaService.crear(otra));
     }
 }

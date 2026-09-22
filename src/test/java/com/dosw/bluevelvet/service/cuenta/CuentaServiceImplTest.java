@@ -13,23 +13,21 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.dosw.bluevelvet.dto.cuenta.CuentaRequestDTO;
-import com.dosw.bluevelvet.dto.cuenta.CuentaResponseDTO;
-import com.dosw.bluevelvet.dto.mesa.MesaResponseDTO;
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
 import com.dosw.bluevelvet.exception.RecursoNoEncontradoException;
-import com.dosw.bluevelvet.mapper.cuenta.CuentaMapperOut;
+import com.dosw.bluevelvet.model.domain.Cuenta;
+import com.dosw.bluevelvet.model.domain.Mesa;
 import com.dosw.bluevelvet.service.mesa.IMesaService;
 import com.dosw.bluevelvet.service.pedido.IPedidoService;
-import com.dosw.bluevelvet.validator.CuentaValidator;
+import com.dosw.bluevelvet.validator.cuenta.CuentaValidator;
 
 @ExtendWith(MockitoExtension.class)
 class CuentaServiceImplTest {
 
-    private final CuentaMapperOut mapperOut = new CuentaMapperOut();
     private final CuentaValidator validator = new CuentaValidator();
 
     @Mock
@@ -38,39 +36,37 @@ class CuentaServiceImplTest {
     @Mock
     private IPedidoService pedidoService;
 
+    @InjectMocks
     private CuentaServiceImpl cuentaService;
-    private CuentaRequestDTO requestDto;
 
     @BeforeEach
     void setUp() {
-        cuentaService = new CuentaServiceImpl(mapperOut, validator, mesaService, pedidoService);
-        requestDto = new CuentaRequestDTO(1L);
-
-        lenient().when(mesaService.buscarPorId(1L)).thenReturn(new MesaResponseDTO(1L, 5, 4, "DISPONIBLE", false));
+        cuentaService = new CuentaServiceImpl(validator, mesaService, pedidoService);
+        lenient().when(mesaService.obtenerPorId(1L)).thenReturn(Mesa.builder().id(1L).numero(5).capacidad(4).build());
         lenient().when(pedidoService.obtenerPorMesa(anyLong())).thenReturn(Collections.emptyList());
     }
 
     @Test
-    @DisplayName("Abrir cuenta sobre mesa existente debe retornar ResponseDTO en estado ABIERTA")
-    void abrir_mesaExistente_debeRetornarResponseDTO() {
-        CuentaResponseDTO resultado = cuentaService.abrir(requestDto);
+    @DisplayName("abrir - mesa existente crea la cuenta en estado ABIERTA con total en 0")
+    void abrir_mesaExistente_creaCuenta() {
+        Cuenta resultado = cuentaService.abrir(1L);
 
-        assertNotNull(resultado.id());
-        assertEquals("ABIERTA", resultado.estado());
-        assertEquals(0.0, resultado.total());
+        assertNotNull(resultado.getId());
+        assertEquals("ABIERTA", resultado.getEstado().name());
+        assertEquals(0.0, resultado.calcularTotal());
     }
 
     @Test
-    @DisplayName("Abrir cuenta cuando la mesa ya tiene una abierta debe lanzar RecursoDuplicadoException")
-    void abrir_mesaConCuentaAbierta_debeLanzarExcepcion() {
-        cuentaService.abrir(requestDto);
+    @DisplayName("abrir - mesa con cuenta abierta lanza RecursoDuplicadoException")
+    void abrir_mesaConCuentaAbierta_lanzaExcepcion() {
+        cuentaService.abrir(1L);
 
-        assertThrows(RecursoDuplicadoException.class, () -> cuentaService.abrir(requestDto));
+        assertThrows(RecursoDuplicadoException.class, () -> cuentaService.abrir(1L));
     }
 
     @Test
-    @DisplayName("Buscar cuenta inexistente debe lanzar RecursoNoEncontradoException")
-    void buscarPorId_inexistente_debeLanzarExcepcion() {
-        assertThrows(RecursoNoEncontradoException.class, () -> cuentaService.buscarPorId(999L));
+    @DisplayName("obtenerPorId - id inexistente lanza RecursoNoEncontradoException")
+    void obtenerPorId_noExiste_lanzaExcepcion() {
+        assertThrows(RecursoNoEncontradoException.class, () -> cuentaService.obtenerPorId(999L));
     }
 }

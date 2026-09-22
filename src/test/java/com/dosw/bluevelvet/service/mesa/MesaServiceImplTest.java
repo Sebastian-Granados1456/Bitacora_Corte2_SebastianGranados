@@ -3,54 +3,61 @@ package com.dosw.bluevelvet.service.mesa;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import com.dosw.bluevelvet.dto.mesa.MesaRequestDTO;
-import com.dosw.bluevelvet.dto.mesa.MesaResponseDTO;
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
 import com.dosw.bluevelvet.exception.RecursoNoEncontradoException;
-import com.dosw.bluevelvet.mapper.mesa.MesaMapperIn;
-import com.dosw.bluevelvet.mapper.mesa.MesaMapperOut;
-import com.dosw.bluevelvet.validator.MesaValidator;
+import com.dosw.bluevelvet.model.domain.EstadoMesa;
+import com.dosw.bluevelvet.model.domain.Mesa;
+import com.dosw.bluevelvet.validator.mesa.IMesaValidator;
 
+@ExtendWith(MockitoExtension.class)
 class MesaServiceImplTest {
 
-    private final MesaMapperIn mapperIn = new MesaMapperIn();
-    private final MesaMapperOut mapperOut = new MesaMapperOut();
-    private final MesaValidator validator = new MesaValidator();
+    @Mock
+    private IMesaValidator validator;
 
+    @InjectMocks
     private MesaServiceImpl mesaService;
-    private MesaRequestDTO requestDto;
 
-    @BeforeEach
-    void setUp() {
-        mesaService = new MesaServiceImpl(mapperIn, mapperOut, validator);
-        requestDto = new MesaRequestDTO(5, 4);
+    @Test
+    @DisplayName("crear - guarda la mesa y le asigna un id")
+    void crear_mesaValida_guardaYRetorna() {
+        Mesa entrada = Mesa.builder().numero(5).capacidad(4)
+                .estado(EstadoMesa.DISPONIBLE).cuentaAbierta(false).build();
+
+        Mesa resultado = mesaService.crear(entrada);
+
+        assertNotNull(resultado.getId());
+        assertEquals(5, resultado.getNumero());
+        verify(validator, times(1)).validarNumeroUnico(eq(5), any());
     }
 
     @Test
-    @DisplayName("Crear mesa valida debe retornar ResponseDTO en estado DISPONIBLE")
-    void crear_mesaValida_debeRetornarResponseDTO() {
-        MesaResponseDTO resultado = mesaService.crear(requestDto);
+    @DisplayName("crear - numero duplicado lanza RecursoDuplicadoException")
+    void crear_numeroDuplicado_lanzaExcepcion() {
+        doThrow(new RecursoDuplicadoException("Numero duplicado"))
+                .when(validator).validarNumeroUnico(any(), any());
 
-        assertNotNull(resultado.id());
-        assertEquals("DISPONIBLE", resultado.estado());
+        Mesa mesa = Mesa.builder().numero(5).capacidad(4).build();
+
+        assertThrows(RecursoDuplicadoException.class, () -> mesaService.crear(mesa));
     }
 
     @Test
-    @DisplayName("Crear mesa con numero duplicado debe lanzar RecursoDuplicadoException")
-    void crear_numeroDuplicado_debeLanzarExcepcion() {
-        mesaService.crear(requestDto);
-
-        assertThrows(RecursoDuplicadoException.class, () -> mesaService.crear(new MesaRequestDTO(5, 2)));
-    }
-
-    @Test
-    @DisplayName("Buscar mesa inexistente debe lanzar RecursoNoEncontradoException")
-    void buscarPorId_inexistente_debeLanzarExcepcion() {
-        assertThrows(RecursoNoEncontradoException.class, () -> mesaService.buscarPorId(1L));
+    @DisplayName("obtenerPorId - id inexistente lanza RecursoNoEncontradoException")
+    void obtenerPorId_noExiste_lanzaExcepcion() {
+        assertThrows(RecursoNoEncontradoException.class, () -> mesaService.obtenerPorId(999L));
     }
 }
