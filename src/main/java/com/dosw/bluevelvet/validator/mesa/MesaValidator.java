@@ -1,6 +1,6 @@
-package com.dosw.bluevelvet.validator;
+package com.dosw.bluevelvet.validator.mesa;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
@@ -11,13 +11,11 @@ import com.dosw.bluevelvet.model.domain.Mesa;
  * Regla de negocio propia de las mesas de Blue Velvet.
  */
 @Component
-public class MesaValidator {
+public class MesaValidator implements IMesaValidator {
 
-    /**
-     * No pueden existir dos mesas con el mismo numero.
-     */
-    public void validarNumeroUnico(Map<Long, Mesa> mesas, Integer numero) {
-        boolean numeroDuplicado = mesas.values().stream()
+    @Override
+    public void validarNumeroUnico(Integer numero, Collection<Mesa> mesasExistentes) {
+        boolean numeroDuplicado = mesasExistentes.stream()
                 .anyMatch(m -> m.getNumero().equals(numero));
 
         if (numeroDuplicado) {

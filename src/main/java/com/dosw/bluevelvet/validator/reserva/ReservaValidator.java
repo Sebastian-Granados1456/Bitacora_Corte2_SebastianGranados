@@ -1,6 +1,7 @@
-package com.dosw.bluevelvet.validator;
+package com.dosw.bluevelvet.validator.reserva;
 
-import java.util.Map;
+import java.time.LocalDateTime;
+import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
@@ -11,13 +12,11 @@ import com.dosw.bluevelvet.model.domain.Reserva;
  * Regla de negocio propia de las reservas de Blue Velvet.
  */
 @Component
-public class ReservaValidator {
+public class ReservaValidator implements IReservaValidator {
 
-    /**
-     * Una mesa no puede tener dos reservas con la misma fecha y hora.
-     */
-    public void validarSinCruceDeHorario(Map<Long, Reserva> reservas, Long idMesa, java.time.LocalDateTime fechaHora) {
-        boolean existeCruce = reservas.values().stream()
+    @Override
+    public void validarSinCruceDeHorario(Long idMesa, LocalDateTime fechaHora, Collection<Reserva> reservasExistentes) {
+        boolean existeCruce = reservasExistentes.stream()
                 .filter(r -> r.getIdMesa().equals(idMesa))
                 .anyMatch(r -> r.getFechaHora().equals(fechaHora));
 

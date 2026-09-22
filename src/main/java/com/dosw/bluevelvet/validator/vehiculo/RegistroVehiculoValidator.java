@@ -1,6 +1,6 @@
-package com.dosw.bluevelvet.validator;
+package com.dosw.bluevelvet.validator.vehiculo;
 
-import java.util.Map;
+import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
@@ -11,14 +11,11 @@ import com.dosw.bluevelvet.model.domain.RegistroVehiculo;
  * Regla de negocio propia del registro de vehiculos en el parqueadero.
  */
 @Component
-public class RegistroVehiculoValidator {
+public class RegistroVehiculoValidator implements IRegistroVehiculoValidator {
 
-    /**
-     * Un vehiculo no puede registrar una nueva entrada si ya tiene un
-     * registro activo (sin salida) con la misma placa.
-     */
-    public void validarSinRegistroActivo(Map<Long, RegistroVehiculo> registros, String placa) {
-        boolean tieneRegistroActivo = registros.values().stream()
+    @Override
+    public void validarSinRegistroActivo(String placa, Collection<RegistroVehiculo> registrosExistentes) {
+        boolean tieneRegistroActivo = registrosExistentes.stream()
                 .anyMatch(r -> r.getPlaca().equalsIgnoreCase(placa) && r.getSalida() == null);
 
         if (tieneRegistroActivo) {
