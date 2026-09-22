@@ -3,6 +3,13 @@ package com.dosw.bluevelvet.model.domain;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Pedido {
 
     private Long id;
@@ -11,7 +18,11 @@ public class Pedido {
     private EstadoPedido estado;
     private LocalDateTime timestamp;
 
+    /**
+     * Un pedido solo puede modificarse mientras esta en estado RECIBIDO.
+     * Una vez entra a preparacion, ya no se puede alterar su contenido.
+     */
     public Boolean puedeModificarse() {
-        return null;
+        return estado == EstadoPedido.RECIBIDO;
     }
 }
