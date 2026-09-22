@@ -80,3 +80,21 @@ mvn test
 ```
 
 18 pruebas (JUnit 5 + Mockito): por dominio, caso exitoso + conflicto/duplicado + no encontrado.
+
+## Evidencias
+
+**Swagger UI** — documentacion interactiva de todos los endpoints:
+
+![Swagger UI](docs/images/swagger-ui.png)
+
+**Cobertura de pruebas (Jacoco)**:
+
+![Cobertura Jacoco](docs/images/jacoco.png)
+
+**Analisis estatico (SonarCloud)** — Quality Gate: Passed:
+
+![Analisis Sonar](docs/images/sonar.png)
+
+**Ejecucion de pruebas** — `mvn test`:
+
+![Ejecucion de pruebas](docs/images/tests.png)
