@@ -4,12 +4,14 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class RegistroVehiculo {
 
     private static final double TARIFA_POR_HORA = 3000.0;
@@ -18,13 +20,12 @@ public class RegistroVehiculo {
     private String placa;
     private LocalDateTime entrada;
     private LocalDateTime salida;
-    private Double cobro;
 
     /**
      * El cobro se calcula por horas (o fraccion) transcurridas entre la
      * entrada y la salida del vehiculo, a una tarifa fija por hora.
      */
-    public Double calcularCobro() {
+    public double calcularCobro() {
         if (entrada == null || salida == null || salida.isBefore(entrada)) {
             return 0.0;
         }

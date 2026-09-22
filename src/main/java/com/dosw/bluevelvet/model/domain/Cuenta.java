@@ -4,17 +4,18 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Cuenta {
 
     private Long id;
     private Long idMesa;
-    private Double total;
     private EstadoCuenta estado;
     private LocalDateTime fechaApertura;
     private List<Pedido> pedidos;
@@ -23,7 +24,7 @@ public class Cuenta {
      * El total de la cuenta es la suma de los subtotales de todos los items
      * de todos los pedidos asociados a la mesa.
      */
-    public Double calcularTotal() {
+    public double calcularTotal() {
         if (pedidos == null) {
             return 0.0;
         }

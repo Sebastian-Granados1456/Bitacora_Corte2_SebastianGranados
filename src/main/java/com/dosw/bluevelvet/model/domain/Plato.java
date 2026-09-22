@@ -1,12 +1,14 @@
 package com.dosw.bluevelvet.model.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Plato {
 
     private Long id;
@@ -15,12 +17,18 @@ public class Plato {
     private String categoria;
     private Boolean disponible;
 
-    /**
-     * Un plato es valido si tiene nombre, precio positivo y categoria definidos.
-     */
-    public Boolean esValido() {
-        return nombre != null && !nombre.isBlank()
-                && precio != null && precio > 0
-                && categoria != null && !categoria.isBlank();
+    // Comportamiento de negocio propio del objeto: el dominio sabe que puede
+    // hacer, sin depender de estado externo. Las validaciones de formato
+    // (nombre no vacio, precio positivo) ya las garantiza el RequestDTO.
+    public boolean estaDisponible() {
+        return Boolean.TRUE.equals(disponible);
+    }
+
+    public void activar() {
+        this.disponible = true;
+    }
+
+    public void desactivar() {
+        this.disponible = false;
     }
 }
