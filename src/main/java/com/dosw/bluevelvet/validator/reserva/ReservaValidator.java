@@ -1,26 +1,27 @@
 package com.dosw.bluevelvet.validator.reserva;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 
 import org.springframework.stereotype.Component;
 
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
-import com.dosw.bluevelvet.model.domain.Reserva;
+import com.dosw.bluevelvet.repository.ReservaRepository;
+
+import lombok.RequiredArgsConstructor;
 
 /**
- * Regla de negocio propia de las reservas de Blue Velvet.
+ * Regla de negocio propia de las reservas de Blue Velvet. Ya no carga todas
+ * las reservas a memoria: le pregunta al Repository.
  */
 @Component
+@RequiredArgsConstructor
 public class ReservaValidator implements IReservaValidator {
 
-    @Override
-    public void validarSinCruceDeHorario(Long idMesa, LocalDateTime fechaHora, Collection<Reserva> reservasExistentes) {
-        boolean existeCruce = reservasExistentes.stream()
-                .filter(r -> r.getIdMesa().equals(idMesa))
-                .anyMatch(r -> r.getFechaHora().equals(fechaHora));
+    private final ReservaRepository reservaRepository;
 
-        if (existeCruce) {
+    @Override
+    public void validarSinCruceDeHorario(Long idMesa, LocalDateTime fechaHora) {
+        if (reservaRepository.existsByMesaIdAndFechaHora(idMesa, fechaHora)) {
             throw new RecursoDuplicadoException(
                     "Ya existe una reserva para la mesa " + idMesa + " en ese horario");
         }

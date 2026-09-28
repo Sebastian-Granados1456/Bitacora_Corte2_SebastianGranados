@@ -1,16 +1,15 @@
 package com.dosw.bluevelvet.service.reserva;
 
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.springframework.stereotype.Service;
 
+import com.dosw.bluevelvet.entity.ReservaEntity;
 import com.dosw.bluevelvet.exception.RecursoNoEncontradoException;
+import com.dosw.bluevelvet.mapper.reserva.ReservaEntityMapper;
 import com.dosw.bluevelvet.model.domain.Reserva;
+import com.dosw.bluevelvet.repository.ReservaRepository;
 import com.dosw.bluevelvet.service.mesa.IMesaService;
-import com.dosw.bluevelvet.util.IdGenerator;
 import com.dosw.bluevelvet.validator.reserva.IReservaValidator;
 
 import lombok.RequiredArgsConstructor;
@@ -21,26 +20,20 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class ReservaServiceImpl implements IReservaService {
 
-    private final Map<Long, Reserva> reservas = new ConcurrentHashMap<>();
-    private final AtomicLong contadorId = new AtomicLong(0);
-
+    private final ReservaRepository reservaRepository;
+    private final ReservaEntityMapper entityMapper;
     private final IReservaValidator validator;
     private final IMesaService mesaService;
 
     @Override
     public List<Reserva> obtenerTodas() {
-        return reservas.values().stream().toList();
+        return entityMapper.toDomainList(reservaRepository.findAll());
     }
 
     @Override
     public Reserva obtenerPorId(Long id) {
-        return reservas.values().stream()
-                .filter(r -> r.getId().equals(id))
-                .findFirst()
-                .orElseThrow(() -> {
-                    log.warn("Reserva no encontrada: id={}", id);
-                    return new RecursoNoEncontradoException("Reserva no encontrada: " + id);
-                });
+        ReservaEntity entidad = buscarEntidadOLanzar(id);
+        return entityMapper.toDomain(entidad);
     }
 
     @Override
@@ -50,19 +43,30 @@ public class ReservaServiceImpl implements IReservaService {
         // Verifica que la mesa exista (delega en IMesaService: un Service
         // puede depender de otro Service, siempre via interfaz)
         mesaService.obtenerPorId(reserva.getIdMesa());
-        validator.validarSinCruceDeHorario(reserva.getIdMesa(), reserva.getFechaHora(), reservas.values());
+        validator.validarSinCruceDeHorario(reserva.getIdMesa(), reserva.getFechaHora());
 
-        reserva.setId(IdGenerator.siguiente(contadorId));
-        reservas.put(reserva.getId(), reserva);
+        ReservaEntity entidad = entityMapper.toEntity(reserva);
+        ReservaEntity guardada = reservaRepository.save(entidad);
 
-        log.info("Reserva creada con id={} para la mesa {}", reserva.getId(), reserva.getIdMesa());
-        return reserva;
+        log.info("Reserva creada con id={} para la mesa {}", guardada.getId(), reserva.getIdMesa());
+        return entityMapper.toDomain(guardada);
     }
 
     @Override
     public void cancelar(Long id) {
-        obtenerPorId(id);
-        reservas.remove(id);
+        if (!reservaRepository.existsById(id)) {
+            log.warn("Reserva no encontrada: id={}", id);
+            throw new RecursoNoEncontradoException("Reserva no encontrada: " + id);
+        }
+        reservaRepository.deleteById(id);
         log.info("Reserva id={} cancelada", id);
+    }
+
+    private ReservaEntity buscarEntidadOLanzar(Long id) {
+        return reservaRepository.findById(id)
+                .orElseThrow(() -> {
+                    log.warn("Reserva no encontrada: id={}", id);
+                    return new RecursoNoEncontradoException("Reserva no encontrada: " + id);
+                });
     }
 }
