@@ -2,32 +2,40 @@ package com.dosw.bluevelvet.validator.mesa;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.List;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
-import com.dosw.bluevelvet.model.domain.Mesa;
+import com.dosw.bluevelvet.repository.MesaRepository;
 
+@ExtendWith(MockitoExtension.class)
 class MesaValidatorTest {
 
-    private final MesaValidator validator = new MesaValidator();
+    @Mock
+    private MesaRepository mesaRepository;
+
+    @InjectMocks
+    private MesaValidator validator;
 
     @Test
     @DisplayName("validarNumeroUnico - numero nuevo no lanza excepcion")
     void validarNumeroUnico_numeroNuevo_noLanza() {
-        List<Mesa> existentes = List.of(Mesa.builder().numero(1).build());
+        when(mesaRepository.existsByNumero(2)).thenReturn(false);
 
-        assertDoesNotThrow(() -> validator.validarNumeroUnico(2, existentes));
+        assertDoesNotThrow(() -> validator.validarNumeroUnico(2));
     }
 
     @Test
     @DisplayName("validarNumeroUnico - numero duplicado lanza RecursoDuplicadoException")
     void validarNumeroUnico_numeroDuplicado_lanzaExcepcion() {
-        List<Mesa> existentes = List.of(Mesa.builder().numero(1).build());
+        when(mesaRepository.existsByNumero(1)).thenReturn(true);
 
-        assertThrows(RecursoDuplicadoException.class, () -> validator.validarNumeroUnico(1, existentes));
+        assertThrows(RecursoDuplicadoException.class, () -> validator.validarNumeroUnico(1));
     }
 }
