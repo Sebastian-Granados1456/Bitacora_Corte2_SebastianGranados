@@ -40,8 +40,6 @@ public class ReservaServiceImpl implements IReservaService {
     public Reserva crear(Reserva reserva) {
         log.info("Creando reserva para la mesa {} a nombre de '{}'", reserva.getIdMesa(), reserva.getCliente());
 
-        // Verifica que la mesa exista (delega en IMesaService: un Service
-        // puede depender de otro Service, siempre via interfaz)
         mesaService.obtenerPorId(reserva.getIdMesa());
         validator.validarSinCruceDeHorario(reserva.getIdMesa(), reserva.getFechaHora());
 

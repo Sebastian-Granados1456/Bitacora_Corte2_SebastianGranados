@@ -7,9 +7,6 @@ import org.mapstruct.Mapper;
 import com.dosw.bluevelvet.entity.MesaEntity;
 import com.dosw.bluevelvet.model.domain.Mesa;
 
-/**
- * Traduce entre el dominio Mesa y su entidad de persistencia MesaEntity.
- */
 @Mapper(componentModel = "spring")
 public interface MesaEntityMapper {
 

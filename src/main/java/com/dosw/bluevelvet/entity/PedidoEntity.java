@@ -1,26 +1,33 @@
 package com.dosw.bluevelvet.entity;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
+import com.dosw.bluevelvet.model.domain.EstadoPedido;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reservas")
+@Table(name = "pedidos")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReservaEntity {
+public class PedidoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -30,12 +37,13 @@ public class ReservaEntity {
     @JoinColumn(name = "id_mesa", nullable = false)
     private MesaEntity mesa;
 
-    @Column(name = "cliente", nullable = false, length = 100)
-    private String cliente;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado", nullable = false, length = 20)
+    private EstadoPedido estado;
 
-    @Column(name = "fecha_hora", nullable = false)
-    private LocalDateTime fechaHora;
+    @Column(name = "timestamp", nullable = false)
+    private LocalDateTime timestamp;
 
-    @Column(name = "comensales", nullable = false)
-    private Integer comensales;
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<ItemPedidoEntity> items;
 }

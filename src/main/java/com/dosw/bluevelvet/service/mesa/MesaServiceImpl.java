@@ -49,7 +49,6 @@ public class MesaServiceImpl implements IMesaService {
     public void marcarCuentaAbierta(Long id, boolean abierta) {
         MesaEntity entidad = buscarEntidadOLanzar(id);
 
-        // Aplica la logica de negocio del dominio antes de volver a guardar
         Mesa mesa = entityMapper.toDomain(entidad);
         if (abierta) {
             mesa.abrirCuenta();

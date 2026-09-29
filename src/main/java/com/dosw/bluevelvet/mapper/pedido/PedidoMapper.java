@@ -16,11 +16,6 @@ import com.dosw.bluevelvet.model.domain.Pedido;
 import com.dosw.bluevelvet.model.domain.Plato;
 import com.dosw.bluevelvet.service.plato.IPlatoService;
 
-/**
- * Traduce entre los DTOs de Pedido y el objeto de dominio. Congela precio y
- * nombre del plato al momento de crear cada item, consultando IPlatoService
- * (un Service puede depender de otro Service via interfaz).
- */
 @Mapper(componentModel = "spring")
 public abstract class PedidoMapper {
 

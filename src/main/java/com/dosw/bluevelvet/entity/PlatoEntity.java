@@ -10,11 +10,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-/**
- * Representa como se guarda un plato en la base de datos (tabla "platos").
- * Sin logica de negocio: solo estructura de persistencia. La logica de
- * negocio (estaDisponible, activar, desactivar) vive en model.domain.Plato.
- */
 @Entity
 @Table(name = "platos")
 @Data

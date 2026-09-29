@@ -1,23 +1,24 @@
-package com.dosw.bluevelvet.mapper.reserva;
+package com.dosw.bluevelvet.mapper.cuenta;
 
 import java.util.List;
 
 import org.mapstruct.Mapping;
 
+import com.dosw.bluevelvet.entity.CuentaEntity;
 import com.dosw.bluevelvet.entity.MesaEntity;
-import com.dosw.bluevelvet.entity.ReservaEntity;
-import com.dosw.bluevelvet.model.domain.Reserva;
+import com.dosw.bluevelvet.model.domain.Cuenta;
 
 @org.mapstruct.Mapper(componentModel = "spring")
-public interface ReservaEntityMapper {
+public interface CuentaEntityMapper {
 
     @Mapping(target = "idMesa", source = "mesa.id")
-    Reserva toDomain(ReservaEntity entity);
+    @Mapping(target = "pedidos", ignore = true)
+    Cuenta toDomain(CuentaEntity entity);
 
     @Mapping(target = "mesa", source = "idMesa")
-    ReservaEntity toEntity(Reserva reserva);
+    CuentaEntity toEntity(Cuenta cuenta);
 
-    List<Reserva> toDomainList(List<ReservaEntity> entities);
+    List<Cuenta> toDomainList(List<CuentaEntity> entities);
 
     default MesaEntity map(Long idMesa) {
         if (idMesa == null) {

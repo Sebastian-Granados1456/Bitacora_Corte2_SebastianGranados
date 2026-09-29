@@ -7,11 +7,6 @@ import org.mapstruct.Mapper;
 import com.dosw.bluevelvet.entity.PlatoEntity;
 import com.dosw.bluevelvet.model.domain.Plato;
 
-/**
- * Traduce entre el dominio Plato y su entidad de persistencia PlatoEntity.
- * El dominio no sabe que existe la base de datos; el Service es quien usa
- * este mapper antes/despues de llamar al Repository.
- */
 @Mapper(componentModel = "spring")
 public interface PlatoEntityMapper {
 

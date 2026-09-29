@@ -1,7 +1,5 @@
 package com.dosw.bluevelvet.entity;
 
-import java.time.LocalDateTime;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,26 +14,29 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "reservas")
+@Table(name = "item_pedido")
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ReservaEntity {
+public class ItemPedidoEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "id_mesa", nullable = false)
-    private MesaEntity mesa;
+    @JoinColumn(name = "id_pedido", nullable = false)
+    private PedidoEntity pedido;
 
-    @Column(name = "cliente", nullable = false, length = 100)
-    private String cliente;
+    @Column(name = "id_plato", nullable = false)
+    private Long idPlato;
 
-    @Column(name = "fecha_hora", nullable = false)
-    private LocalDateTime fechaHora;
+    @Column(name = "nombre_plato", nullable = false, length = 80)
+    private String nombrePlato;
 
-    @Column(name = "comensales", nullable = false)
-    private Integer comensales;
+    @Column(name = "precio_congelado", nullable = false)
+    private Double precioCongelado;
+
+    @Column(name = "cantidad", nullable = false)
+    private Integer cantidad;
 }

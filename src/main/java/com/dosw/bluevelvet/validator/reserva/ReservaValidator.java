@@ -9,10 +9,6 @@ import com.dosw.bluevelvet.repository.ReservaRepository;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Regla de negocio propia de las reservas de Blue Velvet. Ya no carga todas
- * las reservas a memoria: le pregunta al Repository.
- */
 @Component
 @RequiredArgsConstructor
 public class ReservaValidator implements IReservaValidator {

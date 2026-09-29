@@ -1,25 +1,22 @@
 package com.dosw.bluevelvet.validator.cuenta;
 
-import java.util.Collection;
-
 import org.springframework.stereotype.Component;
 
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
-import com.dosw.bluevelvet.model.domain.Cuenta;
 import com.dosw.bluevelvet.model.domain.EstadoCuenta;
+import com.dosw.bluevelvet.repository.CuentaRepository;
 
-/**
- * Regla de negocio propia de las cuentas de Blue Velvet.
- */
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class CuentaValidator implements ICuentaValidator {
 
-    @Override
-    public void validarSinCuentaAbierta(Long idMesa, Collection<Cuenta> cuentasExistentes) {
-        boolean existeAbierta = cuentasExistentes.stream()
-                .anyMatch(c -> c.getIdMesa().equals(idMesa) && c.getEstado() == EstadoCuenta.ABIERTA);
+    private final CuentaRepository cuentaRepository;
 
-        if (existeAbierta) {
+    @Override
+    public void validarSinCuentaAbierta(Long idMesa) {
+        if (cuentaRepository.existsByMesaIdAndEstado(idMesa, EstadoCuenta.ABIERTA)) {
             throw new RecursoDuplicadoException("La mesa " + idMesa + " ya tiene una cuenta abierta");
         }
     }
