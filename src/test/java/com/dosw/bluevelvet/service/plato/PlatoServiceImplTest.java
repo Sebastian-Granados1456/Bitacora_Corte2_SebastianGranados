@@ -9,6 +9,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.DisplayName;
@@ -85,5 +86,24 @@ class PlatoServiceImplTest {
         when(platoRepository.existsById(999L)).thenReturn(false);
 
         assertThrows(RecursoNoEncontradoException.class, () -> service.eliminar(999L));
+    }
+
+    @Test
+    @DisplayName("obtenerDisponibles - solo devuelve los platos disponibles")
+    void obtenerDisponibles_filtraNoDisponibles() {
+        List<PlatoEntity> entidades = List.of(
+                new PlatoEntity(1L, "Tacos", 15000.0, "PLATO_FUERTE", true),
+                new PlatoEntity(2L, "Sopa", 9000.0, "ENTRADA", false));
+        List<Plato> dominio = List.of(
+                Plato.builder().id(1L).nombre("Tacos").disponible(true).build(),
+                Plato.builder().id(2L).nombre("Sopa").disponible(false).build());
+
+        when(platoRepository.findByDisponibleTrue()).thenReturn(entidades);
+        when(entityMapper.toDomainList(entidades)).thenReturn(dominio);
+
+        List<Plato> resultado = service.obtenerDisponibles();
+
+        assertEquals(1, resultado.size());
+        assertEquals("Tacos", resultado.get(0).getNombre());
     }
 }

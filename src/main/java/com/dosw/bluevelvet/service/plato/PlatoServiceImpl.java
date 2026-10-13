@@ -31,6 +31,15 @@ public class PlatoServiceImpl implements IPlatoService {
     }
 
     @Override
+    public List<Plato> obtenerDisponibles() {
+        List<Plato> disponibles = entityMapper.toDomainList(platoRepository.findByDisponibleTrue()).stream()
+                .filter(Plato::estaDisponible)
+                .toList();
+        log.info("Consultando el menu. Platos disponibles: {}", disponibles.size());
+        return disponibles;
+    }
+
+    @Override
     public Plato obtenerPorId(Long id) {
         PlatoEntity entidad = platoRepository.findById(id)
                 .orElseThrow(() -> {

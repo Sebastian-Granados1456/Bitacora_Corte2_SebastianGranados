@@ -8,6 +8,8 @@ public interface IPlatoService {
 
     List<Plato> obtenerTodos();
 
+    List<Plato> obtenerDisponibles();
+
     Plato obtenerPorId(Long id);
 
     Plato crear(Plato plato);
