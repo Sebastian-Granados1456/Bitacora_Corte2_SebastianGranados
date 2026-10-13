@@ -3,6 +3,8 @@ package com.dosw.bluevelvet.exception;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -47,6 +49,23 @@ public class GlobalExceptionHandler {
     public ErrorResponseDTO handleConflicto(RecursoDuplicadoException ex, HttpServletRequest request) {
         log.warn("Conflicto de negocio: {}", ex.getMessage());
         return ErrorResponseDTO.of(409, "Conflicto", ex.getMessage(), request.getRequestURI());
+    }
+
+    // --- Credenciales incorrectas en el login -> 401 -------------------
+    @ExceptionHandler(AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponseDTO handleAutenticacion(AuthenticationException ex, HttpServletRequest request) {
+        log.warn("Intento de login fallido en {}: {}", request.getRequestURI(), ex.getMessage());
+        return ErrorResponseDTO.of(401, "No autenticado", "Email o contraseña incorrectos", request.getRequestURI());
+    }
+
+    // --- Rol sin permiso (@PreAuthorize) -> 403 -------------------------
+    @ExceptionHandler(AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponseDTO handleAccesoDenegado(AccessDeniedException ex, HttpServletRequest request) {
+        log.warn("Acceso denegado a {}", request.getRequestURI());
+        return ErrorResponseDTO.of(403, "Acceso denegado", "Tu rol no tiene permiso para realizar esta accion",
+                request.getRequestURI());
     }
 
     // --- Cualquier otro error no controlado -> 500 -----------------------
