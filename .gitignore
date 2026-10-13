@@ -29,3 +29,6 @@ target/
 .idea/
 *.iml
 .vscode/
+### Secretos ###
+.env
+*.p12

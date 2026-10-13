@@ -8,10 +8,6 @@ import com.dosw.bluevelvet.dto.mesa.MesaRequestDTO;
 import com.dosw.bluevelvet.dto.mesa.MesaResponseDTO;
 import com.dosw.bluevelvet.model.domain.Mesa;
 
-/**
- * Traduce entre los DTOs de Mesa y el objeto de dominio. Se inyecta en el
- * Controller, nunca en el Service.
- */
 @org.mapstruct.Mapper(componentModel = "spring")
 public interface MesaMapper {
 

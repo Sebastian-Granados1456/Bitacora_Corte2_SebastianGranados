@@ -2,33 +2,40 @@ package com.dosw.bluevelvet.validator.plato;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
-import java.util.List;
+import static org.mockito.Mockito.when;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
-import com.dosw.bluevelvet.model.domain.Plato;
+import com.dosw.bluevelvet.repository.PlatoRepository;
 
-// El Validator no tiene dependencias — se prueba sin mocks
+@ExtendWith(MockitoExtension.class)
 class PlatoValidatorTest {
 
-    private final PlatoValidator validator = new PlatoValidator();
+    @Mock
+    private PlatoRepository platoRepository;
+
+    @InjectMocks
+    private PlatoValidator validator;
 
     @Test
     @DisplayName("validarNombreUnico - nombre nuevo no lanza excepcion")
     void validarNombreUnico_nombreNuevo_noLanza() {
-        List<Plato> existentes = List.of(Plato.builder().nombre("Ajiaco").build());
+        when(platoRepository.existsByNombreIgnoreCase("Bandeja Paisa")).thenReturn(false);
 
-        assertDoesNotThrow(() -> validator.validarNombreUnico("Bandeja Paisa", existentes));
+        assertDoesNotThrow(() -> validator.validarNombreUnico("Bandeja Paisa"));
     }
 
     @Test
-    @DisplayName("validarNombreUnico - nombre duplicado (case-insensitive) lanza RecursoDuplicadoException")
+    @DisplayName("validarNombreUnico - nombre duplicado lanza RecursoDuplicadoException")
     void validarNombreUnico_nombreDuplicado_lanzaExcepcion() {
-        List<Plato> existentes = List.of(Plato.builder().nombre("Ajiaco").build());
+        when(platoRepository.existsByNombreIgnoreCase("Ajiaco")).thenReturn(true);
 
-        assertThrows(RecursoDuplicadoException.class, () -> validator.validarNombreUnico("AJIACO", existentes));
+        assertThrows(RecursoDuplicadoException.class, () -> validator.validarNombreUnico("Ajiaco"));
     }
 }

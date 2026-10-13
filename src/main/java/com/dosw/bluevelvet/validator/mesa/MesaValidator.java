@@ -1,24 +1,21 @@
 package com.dosw.bluevelvet.validator.mesa;
 
-import java.util.Collection;
-
 import org.springframework.stereotype.Component;
 
 import com.dosw.bluevelvet.exception.RecursoDuplicadoException;
-import com.dosw.bluevelvet.model.domain.Mesa;
+import com.dosw.bluevelvet.repository.MesaRepository;
 
-/**
- * Regla de negocio propia de las mesas de Blue Velvet.
- */
+import lombok.RequiredArgsConstructor;
+
 @Component
+@RequiredArgsConstructor
 public class MesaValidator implements IMesaValidator {
 
-    @Override
-    public void validarNumeroUnico(Integer numero, Collection<Mesa> mesasExistentes) {
-        boolean numeroDuplicado = mesasExistentes.stream()
-                .anyMatch(m -> m.getNumero().equals(numero));
+    private final MesaRepository mesaRepository;
 
-        if (numeroDuplicado) {
+    @Override
+    public void validarNumeroUnico(Integer numero) {
+        if (mesaRepository.existsByNumero(numero)) {
             throw new RecursoDuplicadoException("Ya existe una mesa con el numero: " + numero);
         }
     }
