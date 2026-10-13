@@ -217,8 +217,8 @@ Imagen publicada: [hub.docker.com/r/sebastiangranados1456/bluevelvet-api](https:
 
 | Ambiente | Cuándo se despliega | Aprobación | URL |
 |---|---|---|---|
-| **QA** | Cada push a `main` o `develop` (`ci-qa.yml`) | Automática | `https://<pendiente-qa>.azurewebsites.net/swagger-ui/index.html` |
-| **PROD** | Al crear un tag `v*.*.*` (`ci-prod.yml`) | Manual, en el environment `production` de GitHub | `https://<pendiente-prod>.azurewebsites.net/swagger-ui/index.html` |
+| **QA** | Cada push a `main` o `develop` (`ci-qa.yml`) | Automática | `https://bluevelvet-qa-sebastiangranados-ctgbe8ekdwdjbadj.northcentralus-01.azurewebsites.net/swagger-ui/index.html` |
+| **PROD** | Al crear un tag `v*.*.*` (`ci-prod.yml`) | Manual, en el environment `production` de GitHub | `https://bluevelvet-prod-sebastiangranados-ahhyhxcndzefgkgf.northcentralus-01.azurewebsites.net/swagger-ui/index.html` |
 
 A QA llega todo lo que se integra, para probarlo. A PROD solo llega una versión etiquetada y aprobada.
 
